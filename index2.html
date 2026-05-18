@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scriptorium Books | Bookstore</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: '#1e3a8a',
+        accent: '#34d399',
+        ink: '#0f172a',
+        highlight: '#f59e0b'
+      },
+      fontFamily: {
+        display: ['Georgia','serif'],
+        sans: ['Inter','sans-serif']
+      },
+      boxShadow: {
+        soft: '0 6px 16px rgba(0,0,0,.06)'
+      }
+    }
+  }
+}
+</script>
+<link rel="preconnect" href="https://images.unsplash.com">
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+
+<header class="bg-white/95 backdrop-blur sticky top-0 z-30 shadow">
+  <div class="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
+    <a href="#" class="flex items-center text-2xl md:text-3xl font-display font-extrabold text-primary">
+      <i data-lucide="book-open" class="w-8 h-8 mr-2 text-accent"></i>
+      Scriptorium Books
+    </a>
+    <div class="hidden md:flex items-center space-x-4 w-1/2">
+      <div class="flex-1 relative">
+        <input type="search" placeholder="Search books, authors, ISBN" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-accent shadow-soft"/>
+        <i data-lucide="search" class="absolute right-3 top-2.5 w-5 h-5 text-gray-400"></i>
+      </div>
+      <button class="p-2 rounded-xl hover:bg-gray-100" onclick="openAuthModal2()"><i data-lucide="user" class="w-6 h-6 text-gray-700"></i></button>
+      <button class="p-2 rounded-xl hover:bg-gray-100 relative" onclick="openCartSidebar()">
+        <i data-lucide="shopping-cart" class="w-6 h-6 text-gray-700"></i>
+        <span id="cart-count" class="absolute -top-1 -right-1 text-[10px] px-1.5 py-0.5 rounded-full bg-highlight text-white font-bold">0</span>
+      </button>
+    </div>
+    <button class="md:hidden p-2 rounded-xl hover:bg-gray-100" id="mobile-menu-toggle"><i data-lucide="menu" class="w-6 h-6"></i></button>
+  </div>
+  <div class="md:hidden px-4 pb-4 hidden" id="mobile-menu">
+    <input type="search" placeholder="Search books, authors, ISBN" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-accent"/>
+    <div class="flex items-center space-x-3 mt-3">
+      <button class="p-2 rounded-xl hover:bg-gray-100"><i data-lucide="user" class="w-6 h-6"></i></button>
+      <button class="p-2 rounded-xl hover:bg-gray-100"><i data-lucide="shopping-cart" class="w-6 h-6"></i></button>
+    </div>
+  </div>
+  <nav class="border-t border-gray-100 bg-white">
+    <div class="max-w-7xl mx-auto px-4 md:px-8 py-2 flex gap-2 overflow-x-auto">
+      <a class="group px-3 py-2 rounded-full bg-gray-100 text-sm hover:bg-accent/20 hover:text-primary inline-flex items-center gap-2" href="#" onclick="navigate('category','Fiction')"><i data-lucide="book" class="w-4 h-4"></i><span>Fiction</span></a>
+      <a class="group px-3 py-2 rounded-full bg-gray-100 text-sm hover:bg-accent/20 hover:text-primary inline-flex items-center gap-2" href="#" onclick="navigate('category','Non‑Fiction')"><i data-lucide="library" class="w-4 h-4"></i><span>Non‑Fiction</span></a>
+      <a class="group px-3 py-2 rounded-full bg-gray-100 text-sm hover:bg-accent/20 hover:text-primary inline-flex items-center gap-2" href="#" onclick="navigate('category','Sci‑Fi')"><i data-lucide="satellite" class="w-4 h-4"></i><span>Sci‑Fi</span></a>
+      <a class="group px-3 py-2 rounded-full bg-gray-100 text-sm hover:bg-accent/20 hover:text-primary inline-flex items-center gap-2" href="#" onclick="navigate('category','Fantasy')"><i data-lucide="sparkles" class="w-4 h-4"></i><span>Fantasy</span></a>
+      <a class="group px-3 py-2 rounded-full bg-gray-100 text-sm hover:bg-accent/20 hover:text-primary inline-flex items-center gap-2" href="#" onclick="navigate('category','Mystery')"><i data-lucide="map" class="w-4 h-4"></i><span>Mystery</span></a>
+      <a class="group px-3 py-2 rounded-full bg-gray-100 text-sm hover:bg-accent/20 hover:text-primary inline-flex items-center gap-2" href="#" onclick="navigate('category','Romance')"><i data-lucide="heart" class="w-4 h-4"></i><span>Romance</span></a>
+      <a class="group px-3 py-2 rounded-full bg-gray-100 text-sm hover:bg-accent/20 hover:text-primary inline-flex items-center gap-2" href="#" onclick="navigate('category','Biography')"><i data-lucide="user" class="w-4 h-4"></i><span>Biography</span></a>
+      <a class="group px-3 py-2 rounded-full bg-gray-100 text-sm hover:bg-accent/20 hover:text-primary inline-flex items-center gap-2" href="#" onclick="navigate('category','History')"><i data-lucide="globe" class="w-4 h-4"></i><span>History</span></a>
+      <a class="group px-3 py-2 rounded-full bg-gray-100 text-sm hover:bg-accent/20 hover:text-primary inline-flex items-center gap-2" href="#" onclick="navigate('category','Children')"><i data-lucide="baby" class="w-4 h-4"></i><span>Children's</span></a>
+    </div>
+  </nav>
+</header>
+<div id="auth-modal-overlay2" class="fixed inset-0 bg-black/40 hidden z-30" onclick="closeAuthModal2()"></div>
+<div id="auth-modal2" class="fixed inset-0 flex items-center justify-center hidden z-40">
+  <div class="bg-white w-full max-w-3xl mx-4 rounded-2xl shadow-2xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-xl font-display font-bold">Account</h3>
+      <button onclick="closeAuthModal2()" class="p-2 rounded-full hover:bg-gray-100"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <section>
+        <h4 class="font-bold mb-2">Login</h4>
+        <div class="space-y-3">
+          <input type="email" id="login-emailx" placeholder="Email" class="w-full p-3 rounded-lg border"/>
+          <input type="password" id="login-passx" placeholder="Password" class="w-full p-3 rounded-lg border"/>
+          <button onclick="loginUser2()" class="w-full py-3 bg-primary text-white rounded-xl">Login</button>
+        </div>
+      </section>
+      <section>
+        <h4 class="font-bold mb-2">Register</h4>
+        <div class="space-y-3">
+          <input type="text" id="reg-namex" placeholder="Full Name" class="w-full p-3 rounded-lg border"/>
+          <input type="email" id="reg-emailx" placeholder="Email" class="w-full p-3 rounded-lg border"/>
+          <input type="password" id="reg-passx" placeholder="Password" class="w-full p-3 rounded-lg border"/>
+          <button onclick="registerUser2()" class="w-full py-3 bg-accent text-ink rounded-xl">Create Account</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div id="cart-sidebar-overlay" class="fixed inset-0 bg-black/40 hidden z-30" onclick="closeCartSidebar()"></div>
+<aside id="cart-sidebar" class="fixed right-0 top-0 h-full w-80 md:w-[420px] bg-white shadow-2xl transform translate-x-full transition-transform z-40">
+  <div class="h-full flex flex-col">
+    <div class="flex items-center justify-between p-4 border-b">
+      <h3 class="text-lg font-display font-bold">Your Cart</h3>
+      <button onclick="closeCartSidebar()" class="p-2 rounded-full hover:bg-gray-100"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div id="cart-sidebar-items" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+    <div class="border-t p-4">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-sm text-gray-600">Subtotal</span>
+        <span id="cart-sidebar-subtotal" class="text-lg font-bold"></span>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="navigate('cart'); closeCartSidebar();" class="flex-1 py-2 bg-gray-100 rounded-xl">View Cart</button>
+        <button onclick="closeCartSidebar();" class="flex-1 py-2 bg-primary text-white rounded-xl">Checkout</button>
+      </div>
+    </div>
+  </div>
+ </aside>
+
+<main class="pb-16">
+  <div id="home-root">
+  <section class="relative">
+    <div class="h-[360px] md:h-[500px] bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1541963463532-d68292c34b19?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHwxfHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80')"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent"></div>
+    <div class="absolute inset-0 flex items-center max-w-7xl mx-auto px-4 md:px-8">
+      <div class="max-w-2xl text-white">
+        <h1 class="text-3xl md:text-5xl font-display font-extrabold">Discover Your Next Favorite Book</h1>
+        <p class="mt-3 text-lg text-white/90">Curated bestsellers, new releases, and timeless classics.</p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a href="#" class="px-5 py-3 rounded-xl bg-accent text-ink font-bold shadow-soft">Shop New Releases</a>
+          <a href="#" class="px-5 py-3 rounded-xl bg-white/20 backdrop-blur border border-white/30">Browse Genres</a>
+        </div>
+        <div class="mt-6 flex items-center gap-6 text-white/90">
+          <span class="inline-flex items-center gap-2"><i data-lucide="award" class="w-5 h-5 text-highlight"></i> Curated Picks</span>
+          <span class="inline-flex items-center gap-2"><i data-lucide="truck" class="w-5 h-5 text-highlight"></i> Fast Delivery</span>
+          <span class="inline-flex items-center gap-2"><i data-lucide="shield-check" class="w-5 h-5 text-highlight"></i> Secure Checkout</span>
+        </div>
+      </div>
+    </div>
+    <svg class="absolute bottom-0 w-full" viewBox="0 0 1440 100" preserveAspectRatio="none"><path d="M0,40 C480,140 960,-20 1440,60 L1440,100 L0,100 Z" fill="#f9fafb"/></svg>
+  </section>
+
+  <section class="max-w-7xl mx-auto px-4 md:px-8 mt-12 grid grid-cols-1 md:grid-cols-4 gap-8">
+    <aside class="md:col-span-1 bg-white rounded-2xl shadow-soft p-6 h-fit">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2"><i data-lucide="sliders" class="w-5 h-5 text-primary"></i><h3 class="text-xl font-bold text-primary">Filters</h3></div>
+        <button class="text-sm text-gray-500 hover:text-primary">Reset</button>
+      </div>
+      <div class="space-y-5 text-sm">
+        <div class="pb-4 border-b border-gray-100">
+          <h4 class="font-semibold text-primary mb-3">Price</h4>
+          <div class="flex flex-wrap gap-2">
+            <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer">
+              <input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>Under $20</span>
+            </label>
+            <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer">
+              <input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>$20–$40</span>
+            </label>
+            <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer">
+              <input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>Over $40</span>
+            </label>
+          </div>
+          <div class="mt-4 space-y-3">
+            <div class="flex items-center gap-3">
+              <input type="number" min="0" placeholder="$0" class="w-24 px-3 py-2 rounded-lg border border-gray-200 text-sm"/>
+              <span class="text-gray-400">to</span>
+              <input type="number" min="0" placeholder="$100" class="w-24 px-3 py-2 rounded-lg border border-gray-200 text-sm"/>
+            </div>
+            <input type="range" min="0" max="100" value="50" class="w-full"/>
+          </div>
+        </div>
+        <div class="pb-4 border-b border-gray-100">
+          <h4 class="font-semibold text-primary mb-3">Format</h4>
+          <div class="flex flex-wrap gap-2">
+            <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer"><input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>Hardcover</span></label>
+            <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer"><input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>Paperback</span></label>
+            <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer"><input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>eBook</span></label>
+          </div>
+        </div>
+        <div class="pb-4 border-b border-gray-100">
+          <h4 class="font-semibold text-primary mb-3">Language</h4>
+          <div class="flex flex-wrap gap-2">
+            <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer"><input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>English</span></label>
+            <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer"><input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>Spanish</span></label>
+            <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer"><input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>French</span></label>
+          </div>
+        </div>
+        <div>
+          <h4 class="font-semibold text-primary mb-3">Rating</h4>
+          <div class="flex flex-wrap gap-2">
+            <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer"><input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>4★ & up</span></label>
+            <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer"><input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>3★ & up</span></label>
+          </div>
+        </div>
+        <button class="w-full py-2.5 mt-2 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition">Apply</button>
+      </div>
+    </aside>
+
+    <section class="md:col-span-3">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl md:text-3xl font-display font-bold">Bestsellers</h2>
+        <div class="flex items-center gap-3">
+          <button onclick="toggleMobileFilters2()" class="md:hidden px-3 py-2 bg-primary text-white rounded-lg shadow-soft">Filters</button>
+          <select class="px-3 py-2 rounded-lg border border-gray-200 text-sm">
+          <option>Sort by: Popular</option>
+          <option>Sort by: Newest</option>
+          <option>Price: Low to High</option>
+          <option>Price: High to Low</option>
+          </select>
+        </div>
+      </div>
+      <div id="mobile-filters2" class="md:hidden hidden bg-white p-4 rounded-xl shadow-soft mb-6">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2"><i data-lucide="sliders" class="w-5 h-5 text-primary"></i><h3 class="text-lg font-bold text-primary">Filters</h3></div>
+          <button onclick="toggleMobileFilters2()" class="text-sm text-gray-500">Close</button>
+        </div>
+        <div class="space-y-5 text-sm">
+          <div class="pb-4 border-b border-gray-100">
+            <h4 class="font-semibold text-primary mb-3">Price</h4>
+            <div class="flex flex-wrap gap-2">
+              <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer"><input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>Under $20</span></label>
+              <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer"><input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>$20–$40</span></label>
+              <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer"><input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>Over $40</span></label>
+            </div>
+          </div>
+          <div class="pb-4 border-b border-gray-100">
+            <h4 class="font-semibold text-primary mb-3">Format</h4>
+            <div class="flex flex-wrap gap-2">
+              <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer"><input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>Hardcover</span></label>
+              <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer"><input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>Paperback</span></label>
+              <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer"><input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>eBook</span></label>
+            </div>
+          </div>
+          <div class="pb-4 border-b border-gray-100">
+            <h4 class="font-semibold text-primary mb-3">Language</h4>
+            <div class="flex flex-wrap gap-2">
+              <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer"><input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>English</span></label>
+              <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer"><input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>Spanish</span></label>
+              <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer"><input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>French</span></label>
+            </div>
+          </div>
+          <div>
+            <h4 class="font-semibold text-primary mb-3">Rating</h4>
+            <div class="flex flex-wrap gap-2">
+              <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer"><input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>4★ & up</span></label>
+              <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-primary hover:bg-accent/10 text-gray-700 text-xs md:text-sm cursor-pointer"><input type="checkbox" class="peer sr-only"><span class="w-4 h-4 rounded-md border border-gray-300 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary"><i data-lucide="check" class="w-3 h-3 text-white"></i></span><span>3★ & up</span></label>
+            </div>
+            <button class="w-full py-2.5 mt-4 bg-primary text-white font-bold rounded-xl">Apply</button>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="group bg-white rounded-2xl shadow-soft overflow-hidden flex flex-col hover:shadow-xl transition">
+          <div class="aspect-[3/4] overflow-hidden relative">
+            <img src="https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80" alt="Book" class="w-full h-full object-cover group-hover:scale-105 transition" loading="lazy" decoding="async">
+            <span class="absolute top-3 left-3 bg-highlight text-white text-xs font-semibold px-2 py-1 rounded">Bestseller</span>
+            <div class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition"></div>
+          </div>
+          <div class="p-5 flex flex-col flex-grow">
+            <h3 class="text-lg font-bold">The Midnight Library</h3>
+            <p class="text-sm text-gray-600 mt-1">Matt Haig</p>
+            <div class="flex items-center gap-1 mt-2 text-yellow-400"><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 text-gray-300"></i></div>
+            <div class="mt-auto pt-3 flex items-center justify-between border-t border-gray-100">
+              <div class="flex items-baseline gap-2"><span class="text-xl font-extrabold text-primary">$19.99</span><span class="text-sm line-through text-gray-400">$24.99</span></div>
+              <button class="px-4 py-2 rounded-lg bg-accent text-ink text-sm font-bold">Add</button>
+            </div>
+          </div>
+        </div>
+        <div class="group bg-white rounded-2xl shadow-soft overflow-hidden flex flex-col hover:shadow-xl transition">
+          <div class="aspect-[3/4] overflow-hidden relative">
+            <img src="https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80" alt="Book" class="w-full h-full object-cover group-hover:scale-105 transition" loading="lazy" decoding="async">
+            <span class="absolute top-3 left-3 bg-primary text-white text-xs font-semibold px-2 py-1 rounded">New</span>
+          </div>
+          <div class="p-5 flex flex-col flex-grow">
+            <h3 class="text-lg font-bold">A Court of Thorns and Roses</h3>
+            <p class="text-sm text-gray-600 mt-1">Sarah J. Maas</p>
+            <div class="flex items-center gap-1 mt-2 text-yellow-400"><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 text-gray-300"></i><i data-lucide="star" class="w-4 h-4 text-gray-300"></i></div>
+            <div class="mt-auto pt-3 flex items-center justify-between border-t border-gray-100">
+              <span class="text-xl font-extrabold text-primary">$17.50</span>
+              <button class="px-4 py-2 rounded-lg bg-accent text-ink text-sm font-bold">Add</button>
+            </div>
+          </div>
+        </div>
+        <div class="group bg-white rounded-2xl shadow-soft overflow-hidden flex flex-col hover:shadow-xl transition">
+          <div class="aspect-[3/4] overflow-hidden relative">
+            <img src="https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80" alt="Book" class="w-full h-full object-cover group-hover:scale-105 transition" loading="lazy" decoding="async">
+          </div>
+          <div class="p-5 flex flex-col flex-grow">
+            <h3 class="text-lg font-bold">The Silent Patient</h3>
+            <p class="text-sm text-gray-600 mt-1">Alex Michaelides</p>
+            <div class="flex items-center gap-1 mt-2 text-yellow-400"><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 text-gray-300"></i></div>
+            <div class="mt-auto pt-3 flex items-center justify-between border-t border-gray-100">
+              <span class="text-xl font-extrabold text-primary">$14.99</span>
+              <button class="px-4 py-2 rounded-lg bg-accent text-ink text-sm font-bold">Add</button>
+            </div>
+          </div>
+        </div>
+        <div class="group bg-white rounded-2xl shadow-soft overflow-hidden flex flex-col hover:shadow-xl transition">
+          <div class="aspect-[3/4] overflow-hidden relative">
+            <img src="https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80" alt="Book" class="w-full h-full object-cover group-hover:scale-105 transition" loading="lazy" decoding="async">
+          </div>
+          <div class="p-5 flex flex-col flex-grow">
+            <h3 class="text-lg font-bold">The Love Hypothesis</h3>
+            <p class="text-sm text-gray-600 mt-1">Ali Hazelwood</p>
+            <div class="flex items-center gap-1 mt-2 text-yellow-400"><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 text-gray-300"></i><i data-lucide="star" class="w-4 h-4 text-gray-300"></i></div>
+            <div class="mt-auto pt-3 flex items-center justify-between border-t border-gray-100">
+              <span class="text-xl font-extrabold text-primary">$16.99</span>
+              <button class="px-4 py-2 rounded-lg bg-accent text-ink text-sm font-bold">Add</button>
+            </div>
+          </div>
+        </div>
+        <div class="group bg-white rounded-2xl shadow-soft overflow-hidden flex flex-col hover:shadow-xl transition">
+          <div class="aspect-[3/4] overflow-hidden relative">
+            <img src="https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80" alt="Book" class="w-full h-full object-cover group-hover:scale-105 transition" loading="lazy" decoding="async">
+          </div>
+          <div class="p-5 flex flex-col flex-grow">
+            <h3 class="text-lg font-bold">Becoming</h3>
+            <p class="text-sm text-gray-600 mt-1">Michelle Obama</p>
+            <div class="flex items-center gap-1 mt-2 text-yellow-400"><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 text-gray-300"></i><i data-lucide="star" class="w-4 h-4 text-gray-300"></i></div>
+            <div class="mt-auto pt-3 flex items-center justify-between border-t border-gray-100">
+              <span class="text-xl font-extrabold text-primary">$21.00</span>
+              <button class="px-4 py-2 rounded-lg bg-accent text-ink text-sm font-bold">Add</button>
+            </div>
+          </div>
+        </div>
+        <div class="group bg-white rounded-2xl shadow-soft overflow-hidden flex flex-col hover:shadow-xl transition">
+          <div class="aspect-[3/4] overflow-hidden relative">
+            <img src="https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80" alt="Book" class="w-full h-full object-cover group-hover:scale-105 transition" loading="lazy" decoding="async">
+          </div>
+          <div class="p-5 flex flex-col flex-grow">
+            <h3 class="text-lg font-bold">Sapiens</h3>
+            <p class="text-sm text-gray-600 mt-1">Yuval Noah Harari</p>
+            <div class="flex items-center gap-1 mt-2 text-yellow-400"><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 fill-yellow-400"></i><i data-lucide="star" class="w-4 h-4 text-gray-300"></i><i data-lucide="star" class="w-4 h-4 text-gray-300"></i></div>
+            <div class="mt-auto pt-3 flex items-center justify-between border-t border-gray-100">
+              <span class="text-xl font-extrabold text-primary">$18.99</span>
+              <button class="px-4 py-2 rounded-lg bg-accent text-ink text-sm font-bold">Add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+</section>
+
+<section class="max-w-7xl mx-auto px-4 md:px-8 mt-16">
+  <div class="bg-gradient-to-r from-primary to-blue-900 text-white rounded-2xl p-6 md:p-10 shadow-soft flex flex-col md:flex-row items-center justify-between">
+  <div>
+    <h3 class="text-2xl md:text-3xl font-display font-bold">Join the Book Club</h3>
+    <p class="text-white/80 mt-2">Exclusive deals, early access, and reading recommendations.</p>
+  </div>
+  <div class="mt-4 md:mt-0 flex w-full md:w-auto">
+    <input type="email" placeholder="Your email" class="p-3 rounded-l-xl w-full md:w-80 text-gray-900 focus:outline-none">
+    <button class="p-3 bg-accent text-ink font-bold rounded-r-xl">Sign Up</button>
+  </div>
+  </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-4 md:px-8 mt-16">
+  <h2 class="text-2xl md:text-3xl font-display font-bold mb-6">Shop by Format</h2>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <a href="#" class="block overflow-hidden rounded-2xl shadow-soft group bg-white">
+      <img src="https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80" class="w-full h-44 md:h-52 object-cover group-hover:scale-105 transition" loading="lazy" decoding="async" alt="Hardcover">
+      <div class="p-4">
+        <p class="font-bold text-primary">Hardcover</p>
+        <p class="text-sm text-gray-600">Premium bindings and collector editions</p>
+      </div>
+    </a>
+    <a href="#" class="block overflow-hidden rounded-2xl shadow-soft group bg-white">
+      <img src="https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80" class="w-full h-44 md:h-52 object-cover group-hover:scale-105 transition" loading="lazy" decoding="async" alt="Paperback">
+      <div class="p-4">
+        <p class="font-bold text-primary">Paperback</p>
+        <p class="text-sm text-gray-600">Portable and budget-friendly reads</p>
+      </div>
+    </a>
+    <a href="#" class="block overflow-hidden rounded-2xl shadow-soft group bg-white">
+      <img src="https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80" class="w-full h-44 md:h-52 object-cover group-hover:scale-105 transition" loading="lazy" decoding="async" alt="eBook">
+      <div class="p-4">
+        <p class="font-bold text-primary">eBook</p>
+        <p class="text-sm text-gray-600">Instant downloads for any device</p>
+      </div>
+    </a>
+  </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-4 md:px-8 mt-16">
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-2xl md:text-3xl font-display font-bold">Editor's Picks</h2>
+    <div class="text-sm text-gray-500">Swipe to browse</div>
+  </div>
+  <div class="flex gap-4 overflow-x-auto pb-2 snap-x">
+    <a href="#" class="min-w-[220px] snap-start bg-white rounded-2xl shadow-soft overflow-hidden group">
+      <div class="aspect-[3/4] overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80" class="w-full h-full object-cover group-hover:scale-105 transition" loading="lazy" decoding="async" alt="Fiction">
+      </div>
+      <div class="p-4">
+        <p class="font-bold">The Night Circus</p>
+        <p class="text-sm text-gray-600">Erin Morgenstern</p>
+      </div>
+    </a>
+    <a href="#" class="min-w-[220px] snap-start bg-white rounded-2xl shadow-soft overflow-hidden group">
+      <div class="aspect-[3/4] overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80" class="w-full h-full object-cover group-hover:scale-105 transition" loading="lazy" decoding="async" alt="Fantasy">
+      </div>
+      <div class="p-4">
+        <p class="font-bold">The Way of Kings</p>
+        <p class="text-sm text-gray-600">Brandon Sanderson</p>
+      </div>
+    </a>
+    <a href="#" class="min-w-[220px] snap-start bg-white rounded-2xl shadow-soft overflow-hidden group">
+      <div class="aspect-[3/4] overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80" class="w-full h-full object-cover group-hover:scale-105 transition" loading="lazy" decoding="async" alt="Sci‑Fi">
+      </div>
+      <div class="p-4">
+        <p class="font-bold">Project Hail Mary</p>
+        <p class="text-sm text-gray-600">Andy Weir</p>
+      </div>
+    </a>
+    <a href="#" class="min-w-[220px] snap-start bg-white rounded-2xl shadow-soft overflow-hidden group">
+      <div class="aspect-[3/4] overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80" class="w-full h-full object-cover group-hover:scale-105 transition" loading="lazy" decoding="async" alt="Mystery">
+      </div>
+      <div class="p-4">
+        <p class="font-bold">The Thursday Murder Club</p>
+        <p class="text-sm text-gray-600">Richard Osman</p>
+      </div>
+    </a>
+    <a href="#" class="min-w-[220px] snap-start bg-white rounded-2xl shadow-soft overflow-hidden group">
+      <div class="aspect-[3/4] overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80" class="w-full h-full object-cover group-hover:scale-105 transition" loading="lazy" decoding="async" alt="Romance">
+      </div>
+      <div class="p-4">
+        <p class="font-bold">The Seven Husbands of Evelyn Hugo</p>
+        <p class="text-sm text-gray-600">Taylor Jenkins Reid</p>
+      </div>
+    </a>
+    <a href="#" class="min-w-[220px] snap-start bg-white rounded-2xl shadow-soft overflow-hidden group">
+      <div class="aspect-[3/4] overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80" class="w-full h-full object-cover group-hover:scale-105 transition" loading="lazy" decoding="async" alt="Biography">
+      </div>
+      <div class="p-4">
+        <p class="font-bold">Educated</p>
+        <p class="text-sm text-gray-600">Tara Westover</p>
+      </div>
+    </a>
+  </div>
+</section>
+<section class="max-w-7xl mx-auto px-4 md:px-8 mt-16">
+  <h2 class="text-2xl md:text-3xl font-display font-bold mb-6">Curated Collections</h2>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <a href="#" class="block overflow-hidden rounded-2xl shadow-soft group">
+      <img src="https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80" class="w-full h-40 md:h-48 object-cover group-hover:scale-105 transition" loading="lazy" decoding="async" alt="Fantasy">
+      <div class="p-4 bg-white">
+        <p class="font-bold text-primary">Epic Fantasy</p>
+        <p class="text-sm text-gray-600">Worlds of magic and adventure</p>
+      </div>
+    </a>
+    <a href="#" class="block overflow-hidden rounded-2xl shadow-soft group">
+      <img src="https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80" class="w-full h-40 md:h-48 object-cover group-hover:scale-105 transition" loading="lazy" decoding="async" alt="Mystery">
+      <div class="p-4 bg-white">
+        <p class="font-bold text-primary">Gripping Mysteries</p>
+        <p class="text-sm text-gray-600">Page-turners and thrillers</p>
+      </div>
+    </a>
+    <a href="#" class="block overflow-hidden rounded-2xl shadow-soft group">
+      <img src="https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80" class="w-full h-40 md:h-48 object-cover group-hover:scale-105 transition" loading="lazy" decoding="async" alt="Romance">
+      <div class="p-4 bg-white">
+        <p class="font-bold text-primary">Heartfelt Romance</p>
+        <p class="text-sm text-gray-600">Love stories to cherish</p>
+      </div>
+    </a>
+  </div>
+</section>
+  </div>
+  <div id="content-view-container" class="max-w-7xl mx-auto px-4 md:px-8 hidden"></div>
+</main>
+
+<footer class="bg-white mt-16 border-t">
+  <div class="max-w-7xl mx-auto px-4 md:px-8 py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
+    <div>
+      <p class="text-sm text-gray-600">© 2025 Scriptorium Books</p>
+      <p class="text-xs text-gray-400 mt-1">All rights reserved</p>
+    </div>
+    <div>
+      <h4 class="font-bold mb-3">Shop</h4>
+      <ul class="space-y-1 text-sm text-gray-600">
+        <li><a href="#" class="hover:text-primary">New Releases</a></li>
+        <li><a href="#" class="hover:text-primary">Bestsellers</a></li>
+        <li><a href="#" class="hover:text-primary">Gift Cards</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-bold mb-3">Company</h4>
+      <ul class="space-y-1 text-sm text-gray-600">
+        <li><a href="#" class="hover:text-primary">About</a></li>
+        <li><a href="#" class="hover:text-primary">Careers</a></li>
+        <li><a href="#" class="hover:text-primary">Press</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-bold mb-3">Support</h4>
+      <ul class="space-y-1 text-sm text-gray-600">
+        <li><a href="#" class="hover:text-primary">Help Center</a></li>
+        <li><a href="#" class="hover:text-primary">Shipping & Returns</a></li>
+        <li><a href="#" class="hover:text-primary">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.getElementById('mobile-menu-toggle')?.addEventListener('click',()=>{const m=document.getElementById('mobile-menu');if(m){m.classList.toggle('hidden');}});
+const homeRoot=document.getElementById('home-root');
+const viewContainer=document.getElementById('content-view-container');
+let cart=[];let userLoggedIn=false;let activeView='home';
+const PRODUCT_IMAGE='https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80';
+const mockProducts=[
+  {id:1,name:'The Midnight Library',author:'Matt Haig',price:19.99,category:'Fiction'},
+  {id:2,name:'A Court of Thorns and Roses',author:'Sarah J. Maas',price:17.5,category:'Fantasy'},
+  {id:3,name:'The Silent Patient',author:'Alex Michaelides',price:14.99,category:'Mystery'},
+  {id:4,name:'The Love Hypothesis',author:'Ali Hazelwood',price:16.99,category:'Romance'},
+  {id:5,name:'Becoming',author:'Michelle Obama',price:21.0,category:'Biography'},
+  {id:6,name:'Sapiens',author:'Yuval Noah Harari',price:18.99,category:'History'}
+];
+const formatCurrency=(a)=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(a);
+const updateCartCount=()=>{const el=document.getElementById('cart-count');if(el){el.textContent=cart.reduce((s,i)=>s+i.quantity,0)}};
+const navigate=(view,data=null)=>{activeView=view;if(view==='home'){homeRoot.classList.remove('hidden');viewContainer.classList.add('hidden')}else{homeRoot.classList.add('hidden');viewContainer.classList.remove('hidden')}
+  if(view==='category'){renderCategoryView(data)}
+  else if(view==='product'){renderProductDetailView(data)}
+  else if(view==='dashboard'){if(!userLoggedIn){renderAuthView()}else{renderDashboardView()}}
+  else if(view==='cart'){openCartSidebar()}
+  updateCartCount();lucide.createIcons();window.scrollTo({top:0,behavior:'smooth'})};
+const renderCard=(p)=>`<div class="bg-white rounded-2xl shadow-soft overflow-hidden flex flex-col">
+  <div class="aspect-[3/4] overflow-hidden"><img src="${PRODUCT_IMAGE}" alt="${p.name}" class="w-full h-full object-cover" loading="lazy" decoding="async"></div>
+  <div class="p-5 flex flex-col flex-grow">
+    <h3 class="text-lg font-bold">${p.name}</h3>
+    <p class="text-sm text-gray-600 mt-1">${p.author}</p>
+    <div class="mt-auto pt-3 flex items-center justify-between border-t border-gray-100">
+      <span class="text-xl font-extrabold text-primary">${formatCurrency(p.price)}</span>
+      <div class="flex gap-2">
+        <button onclick="addToCart(${p.id})" class="px-3 py-2 rounded-lg bg-accent text-ink text-sm font-bold">Add</button>
+        <button onclick="navigate('product',${p.id})" class="px-3 py-2 rounded-lg border border-gray-200 text-sm">Details</button>
+      </div>
+    </div>
+  </div>
+</div>`;
+const renderCategoryView=(cat)=>{const products=mockProducts.filter(p=>!cat||p.category===cat);viewContainer.innerHTML=`<div class="flex items-center justify-between mb-6"><h2 class="text-2xl md:text-3xl font-display font-bold">${cat||'All Books'}</h2></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">${products.map(renderCard).join('')}</div>`};
+const renderProductDetailView=(id)=>{const p=mockProducts.find(x=>x.id===id)||mockProducts[0];viewContainer.innerHTML=`<nav class="text-sm mb-6 text-gray-500"><a href="#" onclick="navigate('home')" class="hover:underline">Home</a> > <a href="#" onclick="navigate('category','${p.category}')" class="hover:underline">${p.category}</a> > <span class="font-semibold">${p.name}</span></nav><div class="grid grid-cols-1 md:grid-cols-2 gap-10 bg-white p-8 rounded-2xl shadow-soft"><div class="rounded-xl overflow-hidden shadow-soft"><img src="${PRODUCT_IMAGE}" alt="${p.name}" class="w-full h-auto object-cover" loading="lazy" decoding="async"></div><div><h1 class="text-3xl font-display font-bold">${p.name}</h1><p class="mt-2 text-gray-600">${p.author}</p><div class="mt-4 text-2xl font-extrabold text-primary">${formatCurrency(p.price)}</div><div class="mt-6 flex gap-3"><button onclick="addToCart(${p.id})" class="px-5 py-3 rounded-xl bg-accent text-ink font-bold">Add to Cart</button><button onclick="navigate('category','${p.category}')" class="px-5 py-3 rounded-xl bg-gray-100">Back to ${p.category}</button></div></div></div>`};
+const renderDashboardView=()=>{viewContainer.innerHTML=`<div class="grid grid-cols-1 md:grid-cols-3 gap-8"><aside class="md:col-span-1 bg-white p-6 rounded-2xl shadow-soft"><div class="space-y-2"><button class="w-full text-left py-2 px-3 rounded-lg bg-gray-50">Profile</button><button class="w-full text-left py-2 px-3 rounded-lg bg-gray-50">Orders</button><button class="w-full text-left py-2 px-3 rounded-lg bg-gray-50">Addresses</button></div></aside><section class="md:col-span-2"><h2 class="text-2xl font-display font-bold mb-4">Welcome back</h2><div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div class="p-6 bg-white rounded-xl shadow-soft"><p class="text-sm text-gray-500">Orders</p><p class="text-3xl font-extrabold text-primary">3</p></div><div class="p-6 bg-white rounded-xl shadow-soft"><p class="text-sm text-gray-500">Wishlist</p><p class="text-3xl font-extrabold text-primary">5</p></div><div class="p-6 bg-white rounded-xl shadow-soft"><p class="text-sm text-gray-500">Rewards</p><p class="text-3xl font-extrabold text-primary">$12</p></div></div></section></div>`};
+const renderAuthView=()=>{viewContainer.innerHTML=`<div class="grid grid-cols-1 md:grid-cols-2 gap-8"><section class="bg-white p-6 rounded-2xl shadow-soft"><h2 class="text-2xl font-display font-bold mb-4">Login</h2><div class="space-y-3"><input type="email" id="login-email2" placeholder="Email" class="w-full p-3 rounded-lg border"/><input type="password" id="login-pass2" placeholder="Password" class="w-full p-3 rounded-lg border"/><button onclick="loginUser2()" class="w-full py-3 bg-primary text-white rounded-xl">Login</button></div></section><section class="bg-white p-6 rounded-2xl shadow-soft"><h2 class="text-2xl font-display font-bold mb-4">Register</h2><div class="space-y-3"><input type="text" id="reg-name2" placeholder="Full Name" class="w-full p-3 rounded-lg border"/><input type="email" id="reg-email2" placeholder="Email" class="w-full p-3 rounded-lg border"/><input type="password" id="reg-pass2" placeholder="Password" class="w-full p-3 rounded-lg border"/><button onclick="registerUser2()" class="w-full py-3 bg-accent text-ink rounded-xl">Create Account</button></div></section></div>`};
+const loginUser2=()=>{userLoggedIn=true;closeAuthModal2();navigate('dashboard')};
+const registerUser2=()=>{userLoggedIn=true;closeAuthModal2();navigate('dashboard')};
+const openAuthModal2=()=>{const o=document.getElementById('auth-modal-overlay2');const m=document.getElementById('auth-modal2');if(o&&m){o.classList.remove('hidden');m.classList.remove('hidden')}lucide.createIcons()};
+const closeAuthModal2=()=>{const o=document.getElementById('auth-modal-overlay2');const m=document.getElementById('auth-modal2');if(o&&m){o.classList.add('hidden');m.classList.add('hidden')}};
+const addToCart=(id,qty=1)=>{const p=mockProducts.find(x=>x.id===id);if(!p)return;const existing=cart.find(x=>x.id===id);if(existing){existing.quantity+=qty}else{cart.push({...p,quantity:qty})}updateCartCount();openCartSidebar()};
+const openCartSidebar=()=>{updateCartSidebar();const o=document.getElementById('cart-sidebar-overlay');const p=document.getElementById('cart-sidebar');if(o&&p){o.classList.remove('hidden');p.classList.remove('translate-x-full')}};
+const closeCartSidebar=()=>{const o=document.getElementById('cart-sidebar-overlay');const p=document.getElementById('cart-sidebar');if(o&&p){o.classList.add('hidden');p.classList.add('translate-x-full')}};
+const updateCartSidebar=()=>{const list=document.getElementById('cart-sidebar-items');const subtotal=document.getElementById('cart-sidebar-subtotal');if(!list||!subtotal)return;if(cart.length===0){list.innerHTML=`<div class="text-center py-12 text-gray-500">Your cart is empty.</div>`}else{list.innerHTML=cart.map(item=>`<div class=\"flex items-center gap-3 p-3 bg-gray-50 rounded-xl\"><img src=\"${PRODUCT_IMAGE}\" alt=\"${item.name}\" class=\"w-14 h-14 object-cover rounded-lg\" loading=\"lazy\" decoding=\"async\"><div class=\"flex-1\"><p class=\"text-sm font-semibold\">${item.name}</p><p class=\"text-xs text-gray-500\">${formatCurrency(item.price)} × ${item.quantity}</p></div><button onclick=\"removeFromCart(${item.id})\" class=\"p-1 text-gray-400 hover:text-red-500\"><i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i></button></div>`).join('')}subtotal.textContent=formatCurrency(cart.reduce((t,i)=>t+i.price*i.quantity,0));lucide.createIcons()};
+const removeFromCart=(id)=>{const idx=cart.findIndex(x=>x.id===id);if(idx>-1){cart.splice(idx,1)}updateCartSidebar();updateCartCount()};
+document.querySelectorAll('header [data-lucide="user"]').forEach(b=>b.addEventListener('click',()=>navigate('dashboard')));
+document.querySelectorAll('header [data-lucide="shopping-cart"]').forEach(b=>b.addEventListener('click',()=>openCartSidebar()));
+lucide.createIcons();
+function toggleMobileFilters2(){const el=document.getElementById('mobile-filters2');if(el){el.classList.toggle('hidden')}}
+lucide.createIcons();
+</script>
+
+</body>
+</html>

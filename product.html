@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Details</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#1e3a8a',accent:'#34d399'},boxShadow:{soft:'0 6px 16px rgba(0,0,0,.06)'}}}}}</script>
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+<header class="bg-white sticky top-0 z-30 shadow">
+  <div class="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
+    <a href="index2.html" class="flex items-center text-2xl md:text-3xl font-extrabold text-primary">
+      <i data-lucide="book-open" class="w-8 h-8 mr-2 text-accent"></i>
+      Scriptorium Books
+    </a>
+    <div class="hidden md:flex items-center space-x-3">
+      <a class="px-3 py-2 rounded-lg border" href="category.html">Browse</a>
+    </div>
+  </div>
+</header>
+<main class="max-w-7xl mx-auto px-4 md:px-8 py-8">
+  <div id="content"></div>
+</main>
+<script>
+const params=new URLSearchParams(location.search);const id=parseInt(params.get('id'))||1;
+const PRODUCT_IMAGE='https://images.unsplash.com/photo-1517770413964-df8ca61194a6?ixid=M3w4MjcwNjd8MHwxfHNlYXJjaHw3fHxib29rfGVufDB8fHx8MTc2NDI2MjYxN3ww&ixlib=rb-4.1.0&fit=max&q=80';
+const mockProducts=[
+ {id:1,name:'The Midnight Library',author:'Matt Haig',price:19.99,category:'Fiction'},
+ {id:2,name:'A Court of Thorns and Roses',author:'Sarah J. Maas',price:17.5,category:'Fantasy'},
+ {id:3,name:'The Silent Patient',author:'Alex Michaelides',price:14.99,category:'Mystery'},
+ {id:4,name:'The Love Hypothesis',author:'Ali Hazelwood',price:16.99,category:'Romance'},
+ {id:5,name:'Becoming',author:'Michelle Obama',price:21.0,category:'Biography'},
+ {id:6,name:'Sapiens',author:'Yuval Noah Harari',price:18.99,category:'History'}
+];
+const formatCurrency=(a)=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(a);
+const p=mockProducts.find(x=>x.id===id)||mockProducts[0];
+document.getElementById('content').innerHTML=
+`<nav class="text-sm mb-6 text-gray-500"><a href="index2.html" class="hover:underline">Home</a> > <a href="category.html?category=${encodeURIComponent(p.category)}" class="hover:underline">${p.category}</a> > <span class="font-semibold">${p.name}</span></nav>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-10 bg-white p-8 rounded-2xl shadow-soft">
+  <div class="rounded-xl overflow-hidden shadow-soft"><img src="${PRODUCT_IMAGE}" alt="${p.name}" class="w-full h-auto object-cover" loading="lazy" decoding="async"></div>
+  <div>
+    <h1 class="text-3xl font-bold">${p.name}</h1>
+    <p class="mt-2 text-gray-600">${p.author}</p>
+    <div class="mt-4 text-2xl font-extrabold text-primary">${formatCurrency(p.price)}</div>
+    <div class="mt-6 flex gap-3">
+      <a href="index2.html" class="px-5 py-3 rounded-xl bg-accent text-gray-900 font-bold">Add to Cart</a>
+      <a href="category.html?category=${encodeURIComponent(p.category)}" class="px-5 py-3 rounded-xl bg-gray-100">Back to ${p.category}</a>
+    </div>
+  </div>
+</div>`;
+lucide.createIcons();
+</script>
+</body>
+</html>
