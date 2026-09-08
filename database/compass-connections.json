@@ -1,0 +1,24 @@
+{
+  "type": "Compass Connections",
+  "version": {
+    "$numberInt": "1"
+  },
+  "connections": [
+    {
+      "id": "74a5cab6-5eb9-4927-83cb-2312b646aa73",
+      "lastUsed": {
+        "$date": {
+          "$numberLong": "1779713156388"
+        }
+      },
+      "favorite": {
+        "name": "localhost:27017"
+      },
+      "savedConnectionType": "recent",
+      "connectionOptions": {
+        "connectionString": "mongodb+srv://wwwarghayadasdev_db_user:msnbgLGXkurfvB0P@cluster0.jyeef5i.mongodb.net/stationery-catalog",
+        "oidc": {}
+      }
+    }
+  ]
+}
