@@ -2,15 +2,13 @@
 
 import axios from 'axios'
 
-const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-
 function getHeaders() {
   const token = localStorage.getItem('adminToken') || localStorage.getItem('customerToken')
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
 function http(method, path, data) {
-  return axios({ method, url: `${BASE}/api${path}`, data, headers: getHeaders() })
+  return axios({ method, url: `/api${path}`, data, headers: getHeaders() })
     .then(r => ({ data: r.data }))
 }
 
@@ -66,6 +64,11 @@ const api = {
     }
 
     return http('put', `/${resource}/${id}`, body)
+  },
+
+  patch(url, body = {}) {
+    const { parts } = buildPath(url)
+    return http('patch', `/${parts.join('/')}`, body)
   },
 
   delete(url) {

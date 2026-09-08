@@ -4,8 +4,6 @@ import { useEffect, useState, useRef } from 'react'
 import axios from 'axios'
 import api from '@/services/api'
 
-const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-
 const EMPTY_FORM = { name: '', description: '', price: '', category: '', stock: '', sku: '', image: '' }
 
 export default function ProductManager() {
@@ -67,7 +65,7 @@ export default function ProductManager() {
       const formData = new FormData()
       formData.append('image', file)
       const token = localStorage.getItem('adminToken')
-      const { data } = await axios.post(`${BASE}/api/upload`, formData, {
+      const { data } = await axios.post('/api/upload', formData, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
       })
       setFormData(prev => ({ ...prev, image: data.url }))

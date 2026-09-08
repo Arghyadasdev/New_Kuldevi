@@ -4,7 +4,6 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 import axios from 'axios'
 
 const AuthContext = createContext(null)
-const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
@@ -28,7 +27,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   const login = useCallback(async (username, password) => {
-    const { data } = await axios.post(`${BASE}/api/auth/login`, { username, password })
+    const { data } = await axios.post('/api/auth/login', { username, password })
     localStorage.setItem('adminToken', data.token)
     localStorage.setItem('adminUsername', data.username)
     setUser({ username: data.username, role: 'admin' })
@@ -44,7 +43,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   const customerLogin = useCallback(async (email, password) => {
-    const { data } = await axios.post(`${BASE}/api/auth/customer/login`, { email, password })
+    const { data } = await axios.post('/api/auth/customer/login', { email, password })
     localStorage.setItem('customerToken', data.token)
     localStorage.setItem('customerName', data.name)
     localStorage.setItem('customerEmail', data.email)
@@ -53,7 +52,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   const customerRegister = useCallback(async (name, email, password) => {
-    const { data } = await axios.post(`${BASE}/api/auth/customer/register`, { name, email, password })
+    const { data } = await axios.post('/api/auth/customer/register', { name, email, password })
     localStorage.setItem('customerToken', data.token)
     localStorage.setItem('customerName', data.name)
     localStorage.setItem('customerEmail', data.email)
