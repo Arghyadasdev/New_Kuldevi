@@ -1,27 +1,32 @@
 import { NextResponse } from 'next/server'
-import connectDB from '@/lib/db'
-import Coupon from '@/models/Coupon'
+import { supabaseForRequest } from '@/lib/supabaseServer'
 
 // Validate a coupon (Public)
 export async function POST(request) {
   try {
-    await connectDB()
     const { code } = await request.json()
     if (!code) return NextResponse.json({ message: 'Code is required' }, { status: 400 })
 
-    const coupon = await Coupon.findOne({ code: code.toUpperCase(), isActive: true })
+    const supabase = supabaseForRequest(request)
+    const { data: coupon, error } = await supabase
+      .from('coupons')
+      .select('*')
+      .eq('code', code.toUpperCase())
+      .eq('is_active', true)
+      .maybeSingle()
+    if (error) throw error
 
     if (!coupon) {
       return NextResponse.json({ message: 'Invalid or inactive coupon code' }, { status: 404 })
     }
 
-    if (coupon.expiryDate && new Date(coupon.expiryDate) < new Date()) {
+    if (coupon.expiry_date && new Date(coupon.expiry_date) < new Date()) {
       return NextResponse.json({ message: 'This coupon has expired' }, { status: 400 })
     }
 
     return NextResponse.json({
       code: coupon.code,
-      discountPercentage: coupon.discountPercentage
+      discountPercentage: coupon.discount_percentage,
     })
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 })

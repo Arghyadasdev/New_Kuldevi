@@ -1,17 +1,16 @@
 import { NextResponse } from 'next/server'
-import connectDB from '@/lib/db'
-import Coupon from '@/models/Coupon'
-import { getAuthAdmin } from '@/lib/auth'
+import { supabaseForRequest, requireAdmin } from '@/lib/supabaseServer'
 
 // Delete a coupon (Admin only)
 export async function DELETE(request, { params }) {
   try {
-    await connectDB()
-    const { error } = getAuthAdmin(request)
-    if (error) return NextResponse.json({ message: error.message }, { status: error.status })
+    const { error: authError } = await requireAdmin(request)
+    if (authError) return NextResponse.json({ message: authError.message }, { status: authError.status })
 
     const { id } = await params
-    await Coupon.findByIdAndDelete(id)
+    const supabase = supabaseForRequest(request)
+    const { error } = await supabase.from('coupons').delete().eq('id', id)
+    if (error) throw error
     return NextResponse.json({ message: 'Coupon deleted' })
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 })

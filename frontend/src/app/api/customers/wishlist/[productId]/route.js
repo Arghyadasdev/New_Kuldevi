@@ -1,27 +1,40 @@
 import { NextResponse } from 'next/server'
-import connectDB from '@/lib/db'
-import Customer from '@/models/Customer'
-import { getAuthCustomer } from '@/lib/auth'
+import { supabaseForRequest, requireCustomer } from '@/lib/supabaseServer'
 
 // Toggle item in wishlist
 export async function POST(request, { params }) {
   try {
-    await connectDB()
-    const { payload, error } = getAuthCustomer(request)
-    if (error) return NextResponse.json({ message: error.message }, { status: error.status })
+    const { user, error: authError } = await requireCustomer(request)
+    if (authError) return NextResponse.json({ message: authError.message }, { status: authError.status })
 
     const { productId } = await params
-    const customer = await Customer.findById(payload.id)
+    const supabase = supabaseForRequest(request)
 
-    const index = customer.wishlist.indexOf(productId)
-    if (index === -1) {
-      customer.wishlist.push(productId)
+    const { data: existing, error: findError } = await supabase
+      .from('wishlists')
+      .select('id')
+      .eq('customer_id', user.id)
+      .eq('product_id', productId)
+      .maybeSingle()
+    if (findError) throw findError
+
+    if (existing) {
+      const { error } = await supabase.from('wishlists').delete().eq('id', existing.id)
+      if (error) throw error
     } else {
-      customer.wishlist.splice(index, 1)
+      const { error } = await supabase
+        .from('wishlists')
+        .insert({ customer_id: user.id, product_id: productId })
+      if (error) throw error
     }
 
-    await customer.save()
-    return NextResponse.json({ wishlist: customer.wishlist })
+    const { data: rows, error: listError } = await supabase
+      .from('wishlists')
+      .select('product_id')
+      .eq('customer_id', user.id)
+    if (listError) throw listError
+
+    return NextResponse.json({ wishlist: (rows || []).map(r => r.product_id) })
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 })
   }

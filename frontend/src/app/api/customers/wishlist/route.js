@@ -1,17 +1,22 @@
 import { NextResponse } from 'next/server'
-import connectDB from '@/lib/db'
-import Customer from '@/models/Customer'
-import { getAuthCustomer } from '@/lib/auth'
+import { supabaseForRequest, requireCustomer } from '@/lib/supabaseServer'
+import { toCamelList } from '@/lib/serialize'
 
-// Get customer wishlist
+// Get customer wishlist (full product objects)
 export async function GET(request) {
   try {
-    await connectDB()
-    const { payload, error } = getAuthCustomer(request)
-    if (error) return NextResponse.json({ message: error.message }, { status: error.status })
+    const { user, error: authError } = await requireCustomer(request)
+    if (authError) return NextResponse.json({ message: authError.message }, { status: authError.status })
 
-    const customer = await Customer.findById(payload.id).populate('wishlist')
-    return NextResponse.json(customer.wishlist || [])
+    const supabase = supabaseForRequest(request)
+    const { data, error } = await supabase
+      .from('wishlists')
+      .select('product:products(*)')
+      .eq('customer_id', user.id)
+    if (error) throw error
+
+    const products = (data || []).map(row => row.product).filter(Boolean)
+    return NextResponse.json(toCamelList(products))
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 })
   }

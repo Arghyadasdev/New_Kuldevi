@@ -1,25 +1,41 @@
 import { NextResponse } from 'next/server'
-import connectDB from '@/lib/db'
-import Customer from '@/models/Customer'
-import Order from '@/models/Order'
-import { getAuthAdmin } from '@/lib/auth'
+import { supabaseForRequest, requireAdmin, supabaseAdmin } from '@/lib/supabaseServer'
 
-// Get all customers (Admin only)
+// Get all customers (Admin only) — every Supabase Auth user who isn't in the admins table
 export async function GET(request) {
   try {
-    await connectDB()
-    const { error } = getAuthAdmin(request)
-    if (error) return NextResponse.json({ message: error.message }, { status: error.status })
+    const { error: authError } = await requireAdmin(request)
+    if (authError) return NextResponse.json({ message: authError.message }, { status: authError.status })
 
-    const customers = await Customer.find().select('-passwordHash').sort({ createdAt: -1 })
+    const admin = supabaseAdmin()
+    const { data: adminRows, error: adminError } = await admin.from('admins').select('user_id')
+    if (adminError) throw adminError
+    const adminIds = new Set((adminRows || []).map(a => a.user_id))
 
-    // Attach order count to each customer for dashboard
-    const customersWithStats = await Promise.all(customers.map(async (c) => {
-      const orderCount = await Order.countDocuments({ customer: c._id })
-      return { ...c.toObject(), orderCount }
-    }))
+    const { data: userList, error: usersError } = await admin.auth.admin.listUsers({ perPage: 1000 })
+    if (usersError) throw usersError
 
-    return NextResponse.json(customersWithStats)
+    const supabase = supabaseForRequest(request)
+    const customers = await Promise.all(
+      userList.users
+        .filter(u => !adminIds.has(u.id))
+        .map(async (u) => {
+          const { count } = await supabase
+            .from('orders')
+            .select('*', { count: 'exact', head: true })
+            .eq('customer_id', u.id)
+          return {
+            _id: u.id,
+            name: u.user_metadata?.name || u.email,
+            email: u.email,
+            orderCount: count || 0,
+            createdAt: u.created_at,
+          }
+        })
+    )
+    customers.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+
+    return NextResponse.json(customers)
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 })
   }

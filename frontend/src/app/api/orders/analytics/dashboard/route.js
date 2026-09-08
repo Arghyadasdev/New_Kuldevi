@@ -1,34 +1,44 @@
 import { NextResponse } from 'next/server'
-import connectDB from '@/lib/db'
-import Order from '@/models/Order'
-import { getAuthAdmin } from '@/lib/auth'
+import { supabaseForRequest, requireAdmin, supabaseAdmin } from '@/lib/supabaseServer'
+import { toCamel } from '@/lib/serialize'
 
 // Get dashboard analytics (Admin only)
 export async function GET(request) {
   try {
-    await connectDB()
-    const { error } = getAuthAdmin(request)
-    if (error) return NextResponse.json({ message: error.message }, { status: error.status })
+    const { error: authError } = await requireAdmin(request)
+    if (authError) return NextResponse.json({ message: authError.message }, { status: authError.status })
 
-    const totalOrders = await Order.countDocuments()
+    const supabase = supabaseForRequest(request)
 
-    const revenueData = await Order.aggregate([
-      { $match: { status: { $ne: 'Cancelled' } } },
-      { $group: { _id: null, total: { $sum: '$totalAmount' } } }
-    ])
-    const totalRevenue = revenueData.length > 0 ? revenueData[0].total : 0
+    const { count: totalOrders, error: countError } = await supabase
+      .from('orders')
+      .select('*', { count: 'exact', head: true })
+    if (countError) throw countError
 
-    // Get recent orders
-    const recentOrders = await Order.find()
-      .populate('customer', 'name')
-      .sort({ createdAt: -1 })
+    const { data: revenueRows, error: revenueError } = await supabase
+      .from('orders')
+      .select('total_amount')
+      .neq('status', 'Cancelled')
+    if (revenueError) throw revenueError
+    const totalRevenue = (revenueRows || []).reduce((sum, o) => sum + Number(o.total_amount), 0)
+
+    const { data: recentRows, error: recentError } = await supabase
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false })
       .limit(5)
+    if (recentError) throw recentError
 
-    return NextResponse.json({
-      totalOrders,
-      totalRevenue,
-      recentOrders
-    })
+    const admin = supabaseAdmin()
+    const recentOrders = await Promise.all((recentRows || []).map(async (order) => {
+      const { data: userData } = await admin.auth.admin.getUserById(order.customer_id)
+      return {
+        ...toCamel(order),
+        customer: userData?.user ? { name: userData.user.user_metadata?.name } : null,
+      }
+    }))
+
+    return NextResponse.json({ totalOrders, totalRevenue, recentOrders })
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 })
   }

@@ -1,26 +1,28 @@
 import { NextResponse } from 'next/server'
-import connectDB from '@/lib/db'
-import Order from '@/models/Order'
-import { getAuthAdmin } from '@/lib/auth'
+import { supabaseForRequest, requireAdmin } from '@/lib/supabaseServer'
+import { toCamel } from '@/lib/serialize'
 
 // Update order status (Admin only)
 export async function PUT(request, { params }) {
   try {
-    await connectDB()
-    const { error } = getAuthAdmin(request)
-    if (error) return NextResponse.json({ message: error.message }, { status: error.status })
+    const { error: authError } = await requireAdmin(request)
+    if (authError) return NextResponse.json({ message: authError.message }, { status: authError.status })
 
     const { id } = await params
     const { status } = await request.json()
-    const order = await Order.findById(id)
+    const supabase = supabaseForRequest(request)
 
-    if (!order) {
+    const { data, error } = await supabase
+      .from('orders')
+      .update({ status })
+      .eq('id', id)
+      .select()
+      .maybeSingle()
+    if (error) throw error
+    if (!data) {
       return NextResponse.json({ message: 'Order not found' }, { status: 404 })
     }
-
-    order.status = status
-    const updatedOrder = await order.save()
-    return NextResponse.json(updatedOrder)
+    return NextResponse.json(toCamel(data))
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 400 })
   }

@@ -1,15 +1,17 @@
 'use client'
 
 import axios from 'axios'
+import { supabase } from '@/lib/supabaseClient'
 
-function getHeaders() {
-  const token = localStorage.getItem('adminToken') || localStorage.getItem('customerToken')
-  return token ? { Authorization: `Bearer ${token}` } : {}
+async function getHeaders() {
+  const { data: { session } } = await supabase.auth.getSession()
+  return session ? { Authorization: `Bearer ${session.access_token}` } : {}
 }
 
-function http(method, path, data) {
-  return axios({ method, url: `/api${path}`, data, headers: getHeaders() })
-    .then(r => ({ data: r.data }))
+async function http(method, path, data) {
+  const headers = await getHeaders()
+  const r = await axios({ method, url: `/api${path}`, data, headers })
+  return { data: r.data }
 }
 
 function buildPath(rawUrl) {

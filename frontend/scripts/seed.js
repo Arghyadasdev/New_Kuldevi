@@ -1,14 +1,17 @@
+/**
+ * Seed sample products into Supabase:
+ *   npm run seed
+ */
 import { config } from 'dotenv'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
-import mongoose from 'mongoose'
-import Product from '../src/models/Product.js'
-import Admin from '../src/models/Admin.js'
-import bcrypt from 'bcryptjs'
+import { createClient } from '@supabase/supabase-js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 config({ path: join(__dirname, '..', '.env') })
+
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
 
 const sampleProducts = [
   // Pens
@@ -39,33 +42,22 @@ const sampleProducts = [
 ]
 
 async function seed() {
-  try {
-    console.log('Connecting to MongoDB...', process.env.MONGO_URI)
-    await mongoose.connect(process.env.MONGO_URI)
-
-    console.log('Clearing existing products...')
-    await Product.deleteMany({})
-
-    console.log('Inserting new sample products...')
-    await Product.insertMany(sampleProducts)
-
-    const count = await Product.countDocuments()
-    console.log(`Successfully seeded ${count} products!`)
-
-    // Ensure admin exists
-    const adminCount = await Admin.countDocuments()
-    if (adminCount === 0) {
-      console.log('Creating default admin account...')
-      const passwordHash = await bcrypt.hash('admin123', 12)
-      await Admin.create({ username: 'admin', passwordHash })
-    }
-
-    console.log('Seeding complete. Exiting.')
-    process.exit(0)
-  } catch (error) {
-    console.error('Error seeding data:', error)
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('SUPABASE_SERVICE_ROLE_KEY is not set in frontend/.env')
     process.exit(1)
   }
+
+  console.log('Clearing existing products...')
+  const { error: deleteError } = await supabase.from('products').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+  if (deleteError) throw deleteError
+
+  console.log('Inserting new sample products...')
+  const { data, error } = await supabase.from('products').insert(sampleProducts).select()
+  if (error) throw error
+
+  console.log(`Successfully seeded ${data.length} products!`)
 }
 
 seed()
+  .then(() => process.exit(0))
+  .catch((error) => { console.error('Error seeding data:', error); process.exit(1) })

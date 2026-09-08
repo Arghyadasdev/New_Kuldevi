@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import axios from 'axios'
 import api from '@/services/api'
+import { supabase } from '@/lib/supabaseClient'
 
 const EMPTY_FORM = { name: '', description: '', price: '', category: '', stock: '', sku: '', image: '' }
 
@@ -64,14 +65,14 @@ export default function ProductManager() {
     try {
       const formData = new FormData()
       formData.append('image', file)
-      const token = localStorage.getItem('adminToken')
+      const { data: { session } } = await supabase.auth.getSession()
       const { data } = await axios.post('/api/upload', formData, {
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+        headers: { Authorization: `Bearer ${session?.access_token}`, 'Content-Type': 'multipart/form-data' }
       })
       setFormData(prev => ({ ...prev, image: data.url }))
     } catch (err) {
       console.error('Upload failed:', err)
-      alert('Image upload failed. Check CLOUDINARY_URL in backend .env')
+      alert('Image upload failed.')
       setImagePreview('')
     } finally {
       setUploading(false)

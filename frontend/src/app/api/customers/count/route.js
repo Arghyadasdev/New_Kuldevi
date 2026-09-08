@@ -1,16 +1,21 @@
 import { NextResponse } from 'next/server'
-import connectDB from '@/lib/db'
-import Customer from '@/models/Customer'
-import { getAuthAdmin } from '@/lib/auth'
+import { requireAdmin, supabaseAdmin } from '@/lib/supabaseServer'
 
 // Get total customer count (Admin only)
 export async function GET(request) {
   try {
-    await connectDB()
-    const { error } = getAuthAdmin(request)
-    if (error) return NextResponse.json({ message: error.message }, { status: error.status })
+    const { error: authError } = await requireAdmin(request)
+    if (authError) return NextResponse.json({ message: authError.message }, { status: authError.status })
 
-    const count = await Customer.countDocuments()
+    const admin = supabaseAdmin()
+    const { data: adminRows, error: adminError } = await admin.from('admins').select('user_id')
+    if (adminError) throw adminError
+    const adminIds = new Set((adminRows || []).map(a => a.user_id))
+
+    const { data: userList, error: usersError } = await admin.auth.admin.listUsers({ perPage: 1000 })
+    if (usersError) throw usersError
+
+    const count = userList.users.filter(u => !adminIds.has(u.id)).length
     return NextResponse.json({ count })
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 })

@@ -1,26 +1,13 @@
 import { NextResponse } from 'next/server'
-import { v2 as cloudinary } from 'cloudinary'
-import { Readable } from 'stream'
-import { getAuthAdmin } from '@/lib/auth'
+import { requireAdmin, supabaseAdmin } from '@/lib/supabaseServer'
 
 const MAX_SIZE = 5 * 1024 * 1024 // 5MB
-
-function configureCloudinary() {
-  const url = process.env.CLOUDINARY_URL
-  if (!url) {
-    throw new Error('CLOUDINARY_URL not set in environment')
-  }
-  const match = url.match(/^cloudinary:\/\/([^:]+):([^@]+)@(.+)$/)
-  if (!match) {
-    throw new Error(`CLOUDINARY_URL format invalid: ${url}`)
-  }
-  cloudinary.config({ api_key: match[1], api_secret: match[2], cloud_name: match[3] })
-}
+const BUCKET = 'product-images'
 
 export async function POST(request) {
   try {
-    const { error } = getAuthAdmin(request)
-    if (error) return NextResponse.json({ message: error.message }, { status: error.status })
+    const { error: authError } = await requireAdmin(request)
+    if (authError) return NextResponse.json({ message: authError.message }, { status: authError.status })
 
     const formData = await request.formData()
     const file = formData.get('image')
@@ -33,18 +20,19 @@ export async function POST(request) {
       return NextResponse.json({ message: 'File too large (max 5MB)' }, { status: 400 })
     }
 
-    configureCloudinary()
     const buffer = Buffer.from(await file.arrayBuffer())
+    const ext = file.name?.split('.').pop() || 'jpg'
+    const path = `${crypto.randomUUID()}.${ext}`
 
-    const result = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        { folder: 'kuldevi-stationers', resource_type: 'image' },
-        (err, res) => err ? reject(err) : resolve(res)
-      )
-      Readable.from(buffer).pipe(stream)
-    })
+    const storage = supabaseAdmin()
+    const { error: uploadError } = await storage.storage
+      .from(BUCKET)
+      .upload(path, buffer, { contentType: file.type, upsert: false })
+    if (uploadError) throw uploadError
 
-    return NextResponse.json({ url: result.secure_url, public_id: result.public_id })
+    const { data: { publicUrl } } = storage.storage.from(BUCKET).getPublicUrl(path)
+
+    return NextResponse.json({ url: publicUrl, public_id: path })
   } catch (error) {
     console.error('[UPLOAD error]', error.message)
     return NextResponse.json({ message: error.message }, { status: 500 })

@@ -1,46 +1,54 @@
 /**
- * Create or reset admin account:
+ * Create an admin account in Supabase Auth + the admins table:
  *   npm run create-admin
  */
 import { config } from 'dotenv'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
+import { createClient } from '@supabase/supabase-js'
+import readline from 'readline'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 config({ path: join(__dirname, '..', '.env') })
 
-import mongoose from 'mongoose'
-import bcrypt from 'bcryptjs'
-import Admin from '../src/models/Admin.js'
-import readline from 'readline'
+const ADMIN_EMAIL_DOMAIN = 'kuldevi.internal'
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
 const ask = (q) => new Promise((res) => rl.question(q, res))
 
 async function main() {
-  await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/stationery-catalog')
-  console.log('Connected to MongoDB\n')
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('SUPABASE_SERVICE_ROLE_KEY is not set in frontend/.env')
+    process.exit(1)
+  }
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
 
-  const existing = await Admin.countDocuments()
-  if (existing > 0) {
-    const overwrite = await ask(`${existing} admin(s) exist. Overwrite all? (yes/no): `)
-    if (overwrite.trim().toLowerCase() !== 'yes') {
-      console.log('Aborted.')
-      process.exit(0)
-    }
-    await Admin.deleteMany({})
-    console.log('Existing admins deleted.\n')
+  const username = (await ask('Username: ')).trim()
+  const password = (await ask('Password: ')).trim()
+  const email = `${username}@${ADMIN_EMAIL_DOMAIN}`
+
+  const { data: created, error: createError } = await supabase.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: { username },
+  })
+  if (createError) {
+    console.error('Failed to create user:', createError.message)
+    process.exit(1)
   }
 
-  const username = await ask('Username: ')
-  const password = await ask('Password: ')
+  const { error: adminError } = await supabase
+    .from('admins')
+    .upsert({ user_id: created.user.id, email })
+  if (adminError) {
+    console.error('Failed to insert into admins table:', adminError.message)
+    process.exit(1)
+  }
 
-  const passwordHash = await bcrypt.hash(password.trim(), 12)
-  await Admin.create({ username: username.trim(), passwordHash })
-
-  console.log(`\nAdmin "${username.trim()}" created successfully!`)
+  console.log(`\nAdmin "${username}" created successfully!`)
   process.exit(0)
 }
 
-main().catch((e) => { console.error(e); process.exit(1) }).finally(() => { rl.close(); mongoose.disconnect() })
+main().catch((e) => { console.error(e); process.exit(1) }).finally(() => rl.close())

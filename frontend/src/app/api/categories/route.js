@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
-import connectDB from '@/lib/db'
-import Product from '@/models/Product'
+import { supabaseForRequest } from '@/lib/supabaseServer'
 
 // Get all unique categories
-export async function GET() {
+export async function GET(request) {
   try {
-    await connectDB()
-    const categories = await Product.distinct('category')
+    const supabase = supabaseForRequest(request)
+    const { data, error } = await supabase.from('products').select('category')
+    if (error) throw error
+    const categories = [...new Set((data || []).map(p => p.category))]
     return NextResponse.json(categories)
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 })

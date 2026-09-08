@@ -1,17 +1,21 @@
 import { NextResponse } from 'next/server'
-import connectDB from '@/lib/db'
-import Order from '@/models/Order'
-import { getAuthCustomer } from '@/lib/auth'
+import { supabaseForRequest, requireCustomer } from '@/lib/supabaseServer'
+import { toCamelList } from '@/lib/serialize'
 
 // Get logged in customer's orders
 export async function GET(request) {
   try {
-    await connectDB()
-    const { payload: customer, error } = getAuthCustomer(request)
-    if (error) return NextResponse.json({ message: error.message }, { status: error.status })
+    const { user, error: authError } = await requireCustomer(request)
+    if (authError) return NextResponse.json({ message: authError.message }, { status: authError.status })
 
-    const orders = await Order.find({ customer: customer.id }).sort({ createdAt: -1 })
-    return NextResponse.json(orders)
+    const supabase = supabaseForRequest(request)
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('customer_id', user.id)
+      .order('created_at', { ascending: false })
+    if (error) throw error
+    return NextResponse.json(toCamelList(data))
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 })
   }

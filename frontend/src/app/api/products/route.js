@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server'
-import connectDB from '@/lib/db'
-import Product from '@/models/Product'
-import { getAuthAdmin } from '@/lib/auth'
+import { supabaseForRequest, requireAdmin } from '@/lib/supabaseServer'
+import { toCamel, toCamelList } from '@/lib/serialize'
 
 // Get all products with optional filtering (public)
 export async function GET(request) {
   try {
-    await connectDB()
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
     const search = searchParams.get('search')
@@ -15,38 +13,23 @@ export async function GET(request) {
     const maxPrice = searchParams.get('maxPrice')
     const sort = searchParams.get('sort')
 
-    let query = {}
+    const supabase = supabaseForRequest(request)
+    let query = supabase.from('products').select('*')
 
-    if (category) {
-      query.category = category
-    }
+    if (category) query = query.eq('category', category)
+    if (search) query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`)
+    if (minPrice) query = query.gte('price', Number(minPrice))
+    if (maxPrice) query = query.lte('price', Number(maxPrice))
 
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
-      ]
-    }
+    if (sort === 'price_asc') query = query.order('price', { ascending: true })
+    else if (sort === 'price_desc') query = query.order('price', { ascending: false })
+    else query = query.order('created_at', { ascending: false }) // default newest
 
-    if (minPrice || maxPrice) {
-      query.price = {}
-      if (minPrice) query.price.$gte = Number(minPrice)
-      if (maxPrice) query.price.$lte = Number(maxPrice)
-    }
+    if (limit) query = query.limit(parseInt(limit))
 
-    let productsQuery = Product.find(query)
-
-    if (limit) {
-      productsQuery = productsQuery.limit(parseInt(limit))
-    }
-
-    let sortObj = { createdAt: -1 } // Default newest
-    if (sort === 'price_asc') sortObj = { price: 1 }
-    if (sort === 'price_desc') sortObj = { price: -1 }
-    if (sort === 'newest') sortObj = { createdAt: -1 }
-
-    const products = await productsQuery.sort(sortObj)
-    return NextResponse.json(products)
+    const { data, error } = await query
+    if (error) throw error
+    return NextResponse.json(toCamelList(data))
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 })
   }
@@ -55,14 +38,26 @@ export async function GET(request) {
 // Create new product (admin only)
 export async function POST(request) {
   try {
-    await connectDB()
-    const { error } = getAuthAdmin(request)
-    if (error) return NextResponse.json({ message: error.message }, { status: error.status })
+    const { error: authError } = await requireAdmin(request)
+    if (authError) return NextResponse.json({ message: authError.message }, { status: authError.status })
 
     const body = await request.json()
-    const product = new Product(body)
-    const savedProduct = await product.save()
-    return NextResponse.json(savedProduct, { status: 201 })
+    const supabase = supabaseForRequest(request)
+    const { data, error } = await supabase
+      .from('products')
+      .insert({
+        name: body.name,
+        description: body.description,
+        price: body.price,
+        category: body.category,
+        stock: body.stock,
+        sku: body.sku,
+        image: body.image,
+      })
+      .select()
+      .single()
+    if (error) throw error
+    return NextResponse.json(toCamel(data), { status: 201 })
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 400 })
   }
