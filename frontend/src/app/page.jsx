@@ -232,13 +232,7 @@ function Home() {
 
       {/* ── ABOUT ── */}
       <section id="about" className="py-24 bg-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-14 items-center">
-          <div>
-            <img src="/logo.png" alt="About Kuldevi"
-              className="rounded-[2rem] shadow-2xl w-full object-contain bg-white p-6"
-              onError={(e) => { e.target.style.display = 'none' }}
-            />
-          </div>
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div>
             <span className="text-amber-600 uppercase tracking-[0.2em] text-sm font-semibold">About Us</span>
             <h3 className="text-5xl font-bold text-blue-950 mt-4 mb-6 leading-tight">

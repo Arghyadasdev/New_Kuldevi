@@ -47,32 +47,6 @@ function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
 
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group" id="navbar-logo-link">
-            <div className="flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
-              <img
-                src="/logo.png"
-                alt="Kuldevi Stationers"
-                className="h-12 w-auto object-contain"
-                onError={(e) => {
-                  e.target.style.display = 'none'
-                  document.getElementById('navbar-text-logo').style.display = 'flex'
-                }}
-                onLoad={() => {
-                  const el = document.getElementById('navbar-text-logo')
-                  if (el) el.style.display = 'none'
-                }}
-              />
-            </div>
-            <div id="navbar-text-logo" className="items-center gap-3" style={{ display: 'flex' }}>
-              <div className="w-10 h-10 rounded-full bg-blue-950 flex items-center justify-center text-amber-400 font-bold text-xl shadow-md">K</div>
-              <div className="leading-tight">
-                <div className="text-blue-950 font-bold text-lg tracking-wide">KULDEVI</div>
-                <div className="text-amber-600 text-[10px] uppercase tracking-[0.2em]">Stationers</div>
-              </div>
-            </div>
-          </Link>
-
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-1">
             {navLinks.map(({ key, path }) => (

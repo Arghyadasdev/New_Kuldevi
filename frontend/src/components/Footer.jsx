@@ -16,23 +16,6 @@ function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Brand */}
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-14 h-14 rounded-full overflow-hidden bg-gold-500 flex items-center justify-center shadow-lg flex-shrink-0">
-                <img
-                  src="/logo.png"
-                  alt="Kuldevi Logo"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.style.display = 'none'
-                    e.target.parentElement.innerHTML += '<span class="text-primary-950 font-bold text-2xl">ಕ</span>'
-                  }}
-                />
-              </div>
-              <div>
-                <span className="text-xl font-display font-bold">KULDEVI</span>
-                <span className="text-gold-400 text-xs block font-kannada">ಕುಲದೇವಿ ಸ್ಟೇಷನರಿ</span>
-              </div>
-            </div>
             <p className="text-primary-300 text-sm leading-relaxed mb-2">
               Your trusted stationery destination since 1995.
             </p>
